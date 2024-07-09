@@ -6,7 +6,7 @@
 /*   By: jheo <jheo@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/02 17:51:24 by jheo              #+#    #+#             */
-/*   Updated: 2024/07/04 16:52:31 by jheo             ###   ########.fr       */
+/*   Updated: 2024/07/09 17:15:46 by jheo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,31 +15,68 @@
 void	error_handling()
 {
 	perror("Error");
-	eixt(EXIT_FAILURE);
+	exit(EXIT_FAILURE);
 }
 
-void	read_file(void	*read_file, char *argv[])
+void	input_file_check(char *input_file)
 {
-	int	fd;
-
-	if (access(argv[1], F_OK) == -1)
-		perror("그런 파일이나 디렉토리가 없습니다.");
+	if (access(input_file, F_OK | R_OK) == 0)
+		write(1, "good\n", 5);
 	else
+		error_handling();
+}
+int	find_path(t_data *t, char	*envp)
+{
+	char	*path;
+	int		i;
+
+	path = "PATH";
+	i = 0;
+	while (path[i])
 	{
-		if (fd = open(argv[1], O_RDONLY) < 0)
-			error_handling();
+		if (envp[i] != path[i])
+			return (-1);
+		i++;
+	}
+	return (1);
+}
+
+void	command_path_check(t_data *t, char	**cmd)
+{
+	if (cmd[0][0] == '/')
+	{
+		
 	}
 }
 
-int	main(int argc, char *argv[])
+void	command_check(t_data *t, char *envp[])
 {
-	pid_t	pid;
-	void	*read_file;
+	int		i;
+	char	*path;
 
-	if (argc < 6)
-		error_handling();
-	if (pid == -1)
-		error_handling();
-	read_file(&read_file, argv[1]);
+	i = 0;
+	while (envp[i])
+	{
+		if (find_path(t, envp[i]) == 1)
+		{
+			path = (envp[i] + 5);
+			break;
+		}
+		i++;
+	}
+	t->path = ft_split(path, ':');
+}
+
+int	main(int argc, char *argv[], char *envp[])
+{
+	t_data	t;
+	
+	// if (argc < 6)
+	// 	error_handling();
+	pipe(t.fds);
+	t.cmd1 = ft_split(argv[2], ' ');
+	t.cmd2 = ft_split(argv[3], ' ');
+	command_check(&t, envp);
+	
 	return (0);
 }

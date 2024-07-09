@@ -1,16 +1,34 @@
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
+
+
+int	find_path(char	*envp)
+{
+	char	*path;
+	int		index;
+
+	index = 0;
+	path = "PATH";
+	while (path[index])
+	{
+		if (envp[index] != path[index])
+			return (-1);
+		index++;
+	}
+	return (1);
+}
 
 int	main(int argc, char *argv[], char *envp[])
 {
+	int	i;
 	char	*path;
-	char	**argument;
-
-	argument = (char **)malloc(sizeof(char *) * 2);
-	argument[0] = "ls";
-	argument[1] = "-l";
-	path = "/pipex/execve";
-	execve(path, argument, envp);
-	exit(0);
+	i = 0;
+	while (envp[i])
+	{
+		if (find_path(envp[i]) == 1)
+			printf("%s", envp[i]);
+		i++;
+	}
 	return (0);
 }
