@@ -43,9 +43,22 @@ int	find_path(t_data *t, char	*envp)
 
 void	command_path_check(t_data *t, char	**cmd)
 {
-	if (cmd[0][0] == '/')
+	int	i;
+	char *command;
+
+	i = 0;
+	if (cmd[0][0] != '/')
 	{
-		
+		while (t->path[i])
+		{
+			command = ft_strjoin(t->path[i], '/');
+			command = ft_strjoin(command,cmd[0]);
+			if (access(command, F_OK | X_OK) == 0)
+			{
+				printf("%s", command);
+			}
+			i++;
+		}
 	}
 }
 
