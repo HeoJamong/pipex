@@ -25,7 +25,7 @@ void	input_file_check(char *input_file)
 	else
 		error_handling();
 }
-int	find_path(t_data *t, char	*envp)
+int	find_path(char	*envp)
 {
 	char	*path;
 	int		i;
@@ -41,7 +41,7 @@ int	find_path(t_data *t, char	*envp)
 	return (1);
 }
 
-void	command_path_check(t_data *t, char	**cmd)
+int	command_path_check(t_data *t, char	**cmd)
 {
 	int	i;
 	char *command;
@@ -51,15 +51,17 @@ void	command_path_check(t_data *t, char	**cmd)
 	{
 		while (t->path[i])
 		{
-			command = ft_strjoin(t->path[i], '/');
+			command = ft_strjoin(t->path[i], "/");
 			command = ft_strjoin(command,cmd[0]);
 			if (access(command, F_OK | X_OK) == 0)
 			{
-				printf("%s", command);
+				t->command = command;
+				return(1);
 			}
 			i++;
 		}
 	}
+	return (-1);
 }
 
 void	command_check(t_data *t, char *envp[])
@@ -70,7 +72,7 @@ void	command_check(t_data *t, char *envp[])
 	i = 0;
 	while (envp[i])
 	{
-		if (find_path(t, envp[i]) == 1)
+		if (find_path(envp[i]) == 1)
 		{
 			path = (envp[i] + 5);
 			break;
@@ -80,16 +82,24 @@ void	command_check(t_data *t, char *envp[])
 	t->path = ft_split(path, ':');
 }
 
+void	pipex(t_data *t)
+{
+	if(pipe(t->pid) == -1)
+		perror("Error");
+	fork();
+	
+}
+
 int	main(int argc, char *argv[], char *envp[])
 {
 	t_data	t;
 	
-	// if (argc < 6)
-	// 	error_handling();
+	(void)argc;
 	pipe(t.fds);
 	t.cmd1 = ft_split(argv[2], ' ');
 	t.cmd2 = ft_split(argv[3], ' ');
 	command_check(&t, envp);
+	command_path_check(&t, t.cmd1);
 	
 	return (0);
 }

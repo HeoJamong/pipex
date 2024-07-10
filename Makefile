@@ -1,6 +1,9 @@
 NAME = 		pipex
 
-SRCS = 	pipex.c
+SRCS = 	pipex.c \
+		ft_memcpy.c \
+		ft_split.c \
+		ft_strjoin.c
 
 HEADR = pipex.h
 
