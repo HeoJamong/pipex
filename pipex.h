@@ -15,6 +15,7 @@ typedef struct s_data
 	int		fds[2];
 	int		i;
 	char	*command;
+	int		input_file;
 }t_data;
 
 

@@ -6,7 +6,7 @@
 /*   By: jheo <jheo@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 14:10:45 by jheo              #+#    #+#             */
-/*   Updated: 2024/07/02 17:50:38 by jheo             ###   ########.fr       */
+/*   Updated: 2024/07/11 16:53:23 by jheo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,5 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	while (++i < s2_len)
 		arr[s1_len + i] = s2[i];
 	arr[s1_len + i] = '\0';
-	free(s1);
 	return (arr);
 }

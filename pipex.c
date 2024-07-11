@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipe.c                                             :+:      :+:    :+:   */
+/*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jheo <jheo@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/02 17:51:24 by jheo              #+#    #+#             */
-/*   Updated: 2024/07/09 17:15:46 by jheo             ###   ########.fr       */
+/*   Updated: 2024/07/11 17:33:36 by jheo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,13 +58,14 @@ int	command_path_check(t_data *t, char	**cmd)
 				t->command = command;
 				return(1);
 			}
+			free(command);
 			i++;
 		}
 	}
 	return (-1);
 }
 
-void	command_check(t_data *t, char *envp[])
+void	path_split(t_data *t, char *envp[])
 {
 	int		i;
 	char	*path;
@@ -82,12 +83,30 @@ void	command_check(t_data *t, char *envp[])
 	t->path = ft_split(path, ':');
 }
 
-void	pipex(t_data *t)
+void	pipex(t_data *t, char *argv[], char *envp[])
 {
-	if(pipe(t->pid) == -1)
-		perror("Error");
-	fork();
+	pid_t	pid;
+	int		fd[2];
 	
+	if (pipe(fd) == -1)
+		perror("pipe error");
+	pid = fork();
+	if (pid == -1)
+		error_handling();
+	else if (pid == 0)
+	{
+		t->input_file = open(argv[0], O_RDONLY);
+		if (t->input_file > 0)
+		{
+			dup2(fd[1], 1);
+			dup2(t->input_file, 0);
+			execve(t->command, t->cmd1, envp);
+		}
+	}
+	else
+	{
+		pid = fork();
+	}
 }
 
 int	main(int argc, char *argv[], char *envp[])
@@ -98,8 +117,6 @@ int	main(int argc, char *argv[], char *envp[])
 	pipe(t.fds);
 	t.cmd1 = ft_split(argv[2], ' ');
 	t.cmd2 = ft_split(argv[3], ' ');
-	command_check(&t, envp);
-	command_path_check(&t, t.cmd1);
-	
+	path_split(&t, envp);
 	return (0);
 }
