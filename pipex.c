@@ -6,7 +6,7 @@
 /*   By: jheo <jheo@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/02 17:51:24 by jheo              #+#    #+#             */
-/*   Updated: 2024/07/11 17:33:36 by jheo             ###   ########.fr       */
+/*   Updated: 2024/07/12 16:10:04 by jheo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ int	find_path(char	*envp)
 	return (1);
 }
 
-int	command_path_check(t_data *t, char	**cmd)
+char	*command_path_check(t_data *t, char	**cmd)
 {
 	int	i;
 	char *command;
@@ -55,14 +55,13 @@ int	command_path_check(t_data *t, char	**cmd)
 			command = ft_strjoin(command,cmd[0]);
 			if (access(command, F_OK | X_OK) == 0)
 			{
-				t->command = command;
-				return(1);
+				return(command);
 			}
 			free(command);
 			i++;
 		}
 	}
-	return (-1);
+	return (NULL);
 }
 
 void	path_split(t_data *t, char *envp[])
@@ -83,29 +82,53 @@ void	path_split(t_data *t, char *envp[])
 	t->path = ft_split(path, ':');
 }
 
+void	first_child(t_data *t, char *argv[], char *envp[], int fd[])
+{
+	t->input_file = open(argv[1], O_RDONLY);
+	if (t->input_file > 0)
+	{
+		dup2(fd[1], 1);
+		dup2(t->input_file, 0);
+		execve(command_path_check(t, t->cmd1), t->cmd1, envp);
+	}
+}
+
+void	second_child(t_data *t, char *argv[], char *envp[], int fd[])
+{
+	t->out_file = open(argv[4], O_WRONLY | O_CREAT);
+	if (t->out_file > 0)
+	{
+		dup2(fd[0], t->input_file);
+		dup2(t->out_file, fd[1]);
+		execve(command_path_check(t, t->cmd2), t->cmd2, envp);
+	}
+}
+
 void	pipex(t_data *t, char *argv[], char *envp[])
 {
-	pid_t	pid;
 	int		fd[2];
 	
 	if (pipe(fd) == -1)
 		perror("pipe error");
-	pid = fork();
-	if (pid == -1)
+	t->pid = fork();
+	if (t->pid == -1)
 		error_handling();
-	else if (pid == 0)
+	else if (t->pid == 0)
 	{
-		t->input_file = open(argv[0], O_RDONLY);
-		if (t->input_file > 0)
-		{
-			dup2(fd[1], 1);
-			dup2(t->input_file, 0);
-			execve(t->command, t->cmd1, envp);
-		}
+		first_child(t, argv, envp, fd);
 	}
 	else
 	{
-		pid = fork();
+		t->pid = fork();
+		if (t->pid == -1)
+			error_handling();
+		else if (t->pid == 0)
+			second_child(t, argv, envp, fd);
+		else
+		{
+			close(fd[0]);
+			close(fd[1]);
+		}
 	}
 }
 

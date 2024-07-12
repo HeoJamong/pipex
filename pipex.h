@@ -14,8 +14,8 @@ typedef struct s_data
 	pid_t	pid;
 	int		fds[2];
 	int		i;
-	char	*command;
 	int		input_file;
+	int		out_file;
 }t_data;
 
 
