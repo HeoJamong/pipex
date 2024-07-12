@@ -11,7 +11,8 @@ typedef struct s_data
 	char	**cmd1;
 	char	**cmd2;
 	char	**path;
-	pid_t	pid;
+	pid_t	pid1;
+	pid_t	pid2;
 	int		fds[2];
 	int		i;
 	int		input_file;

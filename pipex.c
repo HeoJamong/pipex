@@ -87,6 +87,7 @@ void	first_child(t_data *t, char *argv[], char *envp[], int fd[])
 	t->input_file = open(argv[1], O_RDONLY);
 	if (t->input_file > 0)
 	{
+		close(fd[0]);
 		dup2(fd[1], 1);
 		dup2(t->input_file, 0);
 		execve(command_path_check(t, t->cmd1), t->cmd1, envp);
@@ -110,24 +111,23 @@ void	pipex(t_data *t, char *argv[], char *envp[])
 	
 	if (pipe(fd) == -1)
 		perror("pipe error");
-	t->pid = fork();
-	if (t->pid == -1)
+	t->pid1 = fork();
+	if (t->pid1 == -1)
 		error_handling();
-	else if (t->pid == 0)
-	{
+	else if (t->pid1 == 0)
 		first_child(t, argv, envp, fd);
-	}
 	else
 	{
-		t->pid = fork();
-		if (t->pid == -1)
+		t->pid2 = fork();
+		if (t->pid2 == -1)
 			error_handling();
-		else if (t->pid == 0)
+		else if (t->pid2 == 0)
 			second_child(t, argv, envp, fd);
 		else
 		{
 			close(fd[0]);
 			close(fd[1]);
+			// waitpid(t->pid1,)
 		}
 	}
 }
