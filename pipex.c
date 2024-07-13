@@ -12,19 +12,18 @@
 
 #include "pipex.h"
 
-void	error_handling()
+void	all_clean(char **s)
 {
-	perror("Error");
-	exit(EXIT_FAILURE);
+	int	i;
+
+	while (s[i])
+	{
+		free(s[i]);
+		i++;
+	}
+	free(s);
 }
 
-void	input_file_check(char *input_file)
-{
-	if (access(input_file, F_OK | R_OK) == 0)
-		write(1, "good\n", 5);
-	else
-		error_handling();
-}
 int	find_path(char	*envp)
 {
 	char	*path;
@@ -45,14 +44,16 @@ char	*command_path_check(t_data *t, char	**cmd)
 {
 	int	i;
 	char *command;
+	char *temp;
 
 	i = 0;
 	if (cmd[0][0] != '/')
 	{
 		while (t->path[i])
 		{
-			command = ft_strjoin(t->path[i], "/");
-			command = ft_strjoin(command,cmd[0]);
+			temp = ft_strjoin(t->path[i], "/");
+			command = ft_strjoin(temp,cmd[0]);
+			free(temp);
 			if (access(command, F_OK | X_OK) == 0)
 			{
 				return(command);
@@ -85,24 +86,35 @@ void	path_split(t_data *t, char *envp[])
 void	first_child(t_data *t, char *argv[], char *envp[], int fd[])
 {
 	t->input_file = open(argv[1], O_RDONLY);
-	if (t->input_file > 0)
-	{
-		close(fd[0]);
-		dup2(fd[1], 1);
-		dup2(t->input_file, 0);
-		execve(command_path_check(t, t->cmd1), t->cmd1, envp);
-	}
+	if (t->input_file == -1)
+		perror("open error");
+	close(fd[0]);
+	if (dup2(fd[1], 1) == -1)
+		perror("dup error");
+	if (dup2(t->input_file, 0) == -1)
+		perror("dup error");
+	close(fd[1]);
+	close(t->input_file);
+	if (execve(command_path_check(t, t->cmd1), t->cmd1, envp) == -1)
+		perror("execve error");
+	exit(0);
 }
 
 void	second_child(t_data *t, char *argv[], char *envp[], int fd[])
 {
 	t->out_file = open(argv[4], O_WRONLY | O_CREAT);
-	if (t->out_file > 0)
-	{
-		dup2(fd[0], t->input_file);
-		dup2(t->out_file, fd[1]);
-		execve(command_path_check(t, t->cmd2), t->cmd2, envp);
-	}
+	if (t->out_file == -1)
+		perror("open error");
+	close(fd[1]);
+	if (dup2(fd[0], 0) == -1)
+		perror("dup error");
+	if (dup2(t->out_file, 1) == -1)
+		perror("dup error");
+	close(fd[0]);
+	close(t->out_file);
+	if (execve(command_path_check(t, t->cmd2), t->cmd2, envp) == -1)
+		perror("execve error");
+	exit(0);
 }
 
 void	pipex(t_data *t, char *argv[], char *envp[])
@@ -127,7 +139,8 @@ void	pipex(t_data *t, char *argv[], char *envp[])
 		{
 			close(fd[0]);
 			close(fd[1]);
-			// waitpid(t->pid1,)
+			waitpid(t->pid1, NULL, 0);
+			waitpid(t->pid2, NULL, 0);
 		}
 	}
 }
@@ -141,5 +154,8 @@ int	main(int argc, char *argv[], char *envp[])
 	t.cmd1 = ft_split(argv[2], ' ');
 	t.cmd2 = ft_split(argv[3], ' ');
 	path_split(&t, envp);
+	pipex(&t, argv, envp);
+	all_clean(t.cmd1);
+	all_clean(t.cmd2);
 	return (0);
 }
