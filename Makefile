@@ -3,12 +3,13 @@ NAME = 		pipex
 SRCS = 	pipex.c \
 		ft_memcpy.c \
 		ft_split.c \
-		ft_strjoin.c
+		ft_strjoin.c \
+		path.c
 
 HEADR = pipex.h
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -g
 
 OBJS = $(SRCS:.c=.o)
 
@@ -17,7 +18,6 @@ all: $(NAME)
 OBJ = $(OBJS)
 
 $(NAME): $(OBJ) $(HEADR)
-	@make -C ./mlx
 	$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
 
 %.o: %.c

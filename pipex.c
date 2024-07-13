@@ -6,7 +6,7 @@
 /*   By: jheo <jheo@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/02 17:51:24 by jheo              #+#    #+#             */
-/*   Updated: 2024/07/12 16:10:04 by jheo             ###   ########.fr       */
+/*   Updated: 2024/07/13 20:02:43 by jheo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,71 +16,13 @@ void	all_clean(char **s)
 {
 	int	i;
 
+	i = 0;
 	while (s[i])
 	{
 		free(s[i]);
 		i++;
 	}
 	free(s);
-}
-
-int	find_path(char	*envp)
-{
-	char	*path;
-	int		i;
-
-	path = "PATH";
-	i = 0;
-	while (path[i])
-	{
-		if (envp[i] != path[i])
-			return (-1);
-		i++;
-	}
-	return (1);
-}
-
-char	*command_path_check(t_data *t, char	**cmd)
-{
-	int	i;
-	char *command;
-	char *temp;
-
-	i = 0;
-	if (cmd[0][0] != '/')
-	{
-		while (t->path[i])
-		{
-			temp = ft_strjoin(t->path[i], "/");
-			command = ft_strjoin(temp,cmd[0]);
-			free(temp);
-			if (access(command, F_OK | X_OK) == 0)
-			{
-				return(command);
-			}
-			free(command);
-			i++;
-		}
-	}
-	return (NULL);
-}
-
-void	path_split(t_data *t, char *envp[])
-{
-	int		i;
-	char	*path;
-
-	i = 0;
-	while (envp[i])
-	{
-		if (find_path(envp[i]) == 1)
-		{
-			path = (envp[i] + 5);
-			break;
-		}
-		i++;
-	}
-	t->path = ft_split(path, ':');
 }
 
 void	first_child(t_data *t, char *argv[], char *envp[], int fd[])
@@ -90,49 +32,61 @@ void	first_child(t_data *t, char *argv[], char *envp[], int fd[])
 		perror("open error");
 	close(fd[0]);
 	if (dup2(fd[1], 1) == -1)
+	{
 		perror("dup error");
+		exit(EXIT_FAILURE);
+	}
 	if (dup2(t->input_file, 0) == -1)
+	{
 		perror("dup error");
+		exit(EXIT_FAILURE);
+	}
 	close(fd[1]);
 	close(t->input_file);
 	if (execve(command_path_check(t, t->cmd1), t->cmd1, envp) == -1)
 		perror("execve error");
-	exit(0);
+	exit(EXIT_FAILURE);
 }
 
 void	second_child(t_data *t, char *argv[], char *envp[], int fd[])
 {
-	t->out_file = open(argv[4], O_WRONLY | O_CREAT);
+	t->out_file = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	if (t->out_file == -1)
 		perror("open error");
 	close(fd[1]);
 	if (dup2(fd[0], 0) == -1)
+	{
 		perror("dup error");
+		exit(EXIT_FAILURE);
+	}
 	if (dup2(t->out_file, 1) == -1)
+	{
 		perror("dup error");
+		exit(EXIT_FAILURE);
+	}
 	close(fd[0]);
 	close(t->out_file);
 	if (execve(command_path_check(t, t->cmd2), t->cmd2, envp) == -1)
 		perror("execve error");
-	exit(0);
+	exit(EXIT_FAILURE);
 }
 
 void	pipex(t_data *t, char *argv[], char *envp[])
 {
 	int		fd[2];
-	
+
 	if (pipe(fd) == -1)
 		perror("pipe error");
 	t->pid1 = fork();
 	if (t->pid1 == -1)
-		error_handling();
+		perror("e123");
 	else if (t->pid1 == 0)
 		first_child(t, argv, envp, fd);
 	else
 	{
 		t->pid2 = fork();
 		if (t->pid2 == -1)
-			error_handling();
+			perror("123");
 		else if (t->pid2 == 0)
 			second_child(t, argv, envp, fd);
 		else
@@ -148,7 +102,7 @@ void	pipex(t_data *t, char *argv[], char *envp[])
 int	main(int argc, char *argv[], char *envp[])
 {
 	t_data	t;
-	
+
 	(void)argc;
 	pipe(t.fds);
 	t.cmd1 = ft_split(argv[2], ' ');
