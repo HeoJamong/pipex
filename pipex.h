@@ -6,7 +6,7 @@
 /*   By: jheo <jheo@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/13 20:02:59 by jheo              #+#    #+#             */
-/*   Updated: 2024/07/13 20:04:15 by jheo             ###   ########.fr       */
+/*   Updated: 2024/07/15 23:30:43 by jheo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 # include <stdlib.h>
 # include <unistd.h>
 # include <fcntl.h>
-# include <stdio.h>
 # include <sys/wait.h>
 
 typedef struct s_data
@@ -26,8 +25,6 @@ typedef struct s_data
 	char	**path;
 	pid_t	pid1;
 	pid_t	pid2;
-	int		fds[2];
-	int		i;
 	int		input_file;
 	int		out_file;
 }t_data;
@@ -38,4 +35,5 @@ char	**ft_split(char const *s, char c);
 int		find_path(char	*envp);
 char	*command_path_check(t_data *t, char	**cmd);
 void	path_split(t_data *t, char *envp[]);
+void	error_control(char *error_msg);
 #endif

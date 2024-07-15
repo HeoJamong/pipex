@@ -6,11 +6,17 @@
 /*   By: jheo <jheo@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/13 20:01:02 by jheo              #+#    #+#             */
-/*   Updated: 2024/07/13 20:02:19 by jheo             ###   ########.fr       */
+/*   Updated: 2024/07/15 22:27:12 by jheo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+
+void	error_control(char *error_msg)
+{
+	perror(error_msg);
+	exit(EXIT_FAILURE);
+}
 
 int	find_path(char	*envp)
 {
