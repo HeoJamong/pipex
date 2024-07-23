@@ -9,7 +9,7 @@ SRCS = 	pipex.c \
 HEADR = pipex.h
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g
+CFLAGS = -Wall -Wextra -Werror -g -fsanitize=address
 
 OBJS = $(SRCS:.c=.o)
 
